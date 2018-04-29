@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration
+  PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-config.dtd">	<!-- 头部声明，验证 XML 文档正确性 -->
+<configuration>
+
+	<!-- 可外部配置且可动态替换 -->
+	<properties resource="com/zjipst/cjj/config.properties">
+		<!-- <property name="username" value="root"/>
+		<property name="password" value="root"/> -->
+	</properties>
+	
+	<!-- 设置 MyBatis 的运行时行为 -->
+	<settings>
+		<setting name="cacheEnabled" value="true" />
+		<setting name="lazyLoadingEnabled" value="true" />
+		<setting name="multipleResultSetsEnabled" value="true" />
+		<setting name="useColumnLabel" value="true" />
+		<setting name="useGeneratedKeys" value="false" />
+		<setting name="autoMappingBehavior" value="PARTIAL" />
+		<!-- <setting name="autoMappingUnknownColumnBehavior" value="WARNING" /> -->
+		<setting name="defaultExecutorType" value="SIMPLE" />
+		<setting name="defaultStatementTimeout" value="25" />
+		<!-- <setting name="defaultFetchSize" value="100" /> -->
+		<setting name="safeRowBoundsEnabled" value="false" />
+		<setting name="mapUnderscoreToCamelCase" value="false" />
+		<setting name="localCacheScope" value="SESSION" />
+		<setting name="jdbcTypeForNull" value="OTHER" />
+		<setting name="lazyLoadTriggerMethods" value="equals,clone,hashCode,toString" />
+	</settings>
+	
+	<!-- 类型别名 -->
+	<typeAliases>
+		<typeAlias alias="BlogMapper_Alia" type="com.zjipst.cjj.BlogMapper" />
+	</typeAliases>
+	
+	<!-- 类型处理器将获取的值以合适的方式转换成 Java 类型 -->
+	<typeHandlers>
+		<typeHandler handler="com.zjipst.cjj.ExampleTypeHandler" />
+	</typeHandlers>
+	
+	<!-- 覆盖默认的对象工厂 -->
+	<!-- <objectFactory type="org.mybatis.example.ExampleObjectFactory">
+		<property name="someProperty" value="100" />
+	</objectFactory> -->
+	
+	<!-- 配置插件 -->
+	<!-- <plugins>
+		<plugin interceptor="org.mybatis.example.ExamplePlugin">
+			<property name="someProperty" value="100" />
+		</plugin>
+	</plugins> -->
+	
+	<!-- 配置环境 -->
+	<environments default="development">
+		<!-- 事务管理和连接池的配置 -->
+		<environment id="development">
+			<transactionManager type="JDBC"></transactionManager>
+			<dataSource type="POOLED">
+				<property name="driver" value="${driver}"/>
+				<property name="url" value="${url}"/>
+				<property name="username" value="${username}"/>
+				<property name="password" value="${password}"/>
+			</dataSource>
+		</environment>
+	</environments>
+	
+	<!-- mapper 映射器(SQL代码和映射定义信息) -->
+	<mappers> 
+		<!--  相对于类路径的资源引用 -->
+		<mapper resource="com/zjipst/cjj/BlogMapper.xml"/> 
+	</mappers>
+	<!-- Using url fully qualified paths -->
+	<!-- <mappers>
+		<mapper url="file:///com/zjipst/cjj/BlogMapper.xml" />
+	</mappers> -->
+	<!-- Using mapper interface classes -->
+	<!-- <mappers> <mapper class="com.zjipst.cjj.BlogMapper"/> </mappers> -->
+	<!-- Register all interfaces in a package as mappers -->
+	<!-- <mappers> <package name="com.zjipst.cjj" /> </mappers> -->
+</configuration>

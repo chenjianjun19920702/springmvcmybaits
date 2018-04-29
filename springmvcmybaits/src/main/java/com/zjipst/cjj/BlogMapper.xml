@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 指定命名空间 唯一 -->
+<mapper namespace="com.zjipst.cjj.BlogMapper">
+	<resultMap type="com.zjipst.cjj.Blog" id="blogResult">
+		<result property="blogId" column="blog_id" />
+		<result property="authorId" column="author_id" />
+		<result property="name" column="name" />
+		<result property="brief" column="brief" />
+		<result property="content" column="content" />
+		<result property="source" column="source" jdbcType="VARCHAR"
+			javaType="STRING" typeHandler="com.zjipst.cjj.ExampleTypeHandler" />
+		<discriminator javaType="String" column="name">
+	        <case value="sds" resultMap="newBlog"/>
+	    </discriminator>
+	</resultMap>
+	<!-- 默认会有自动映射的 -->
+	<resultMap type="com.zjipst.cjj.Blog" id="newBlog">  
+		<result property="source" column="source" />
+	</resultMap> 
+	<select id="selectBlog" resultType="com.zjipst.cjj.Blog">
+		select
+		blog_id as blogId,
+		author_id as authorId,
+		brief as brief,
+		content as content,
+		source as
+		source
+		from Blog where blog_id = #{blogId}
+	</select>
+	<select id="selectBlogs" resultMap="blogResult">
+		select * from Blog
+	</select>
+	<insert id="insertBlog" parameterType="com.zjipst.cjj.Blog"
+		useGeneratedKeys="true" keyProperty="blogId">
+		insert into blog
+		(author_id,brief,name,content,source)
+		values (#{authorId}, #{brief},
+		#{name},#{content}, #{source})
+	</insert>
+	<!-- <insert id="insertBlogs" useGeneratedKeys="true" parameterType="java.util.ArrayList"> 
+		<selectKey resultType="int" keyProperty="blogId" order="AFTER"> SELECT LAST_INSERT_ID() 
+		</selectKey> insert into blog (author,brief,name,content,source) values <foreach 
+		collection="list" item="item" index="index" separator=","> (#{item.authorId}, 
+		#{item.brief}, #{item.name},#{item.content}, #{item.source}) </foreach> </insert> -->
+	<insert id="insertBlogs" useGeneratedKeys="true" keyProperty="blogId"
+		parameterType="java.util.ArrayList">
+		insert into blog (author_id,brief,name,content,source) values
+		<foreach collection="list" item="item" index="index"
+			separator=",">
+			(#{item.authorId}, #{item.brief},
+			#{item.name},#{item.content}, #{item.source})
+		</foreach>
+	</insert>
+	<update id="updateBlog" parameterType="com.zjipst.cjj.Blog">
+		update blog set
+		author_id=#{authorId},brief=#{brief},name=#{name},content=#{content},source=#{source}
+		where blog_id=#{blogId}
+	</update>
+	<delete id="deleteBlog">
+		delete from blog where blog_id = #{blogId}
+	</delete>
+
+	<!-- Very Complex Result Map -->
+	<resultMap id="detailedBlogResultMap" type="com.zjipst.cjj.BlogDetail">
+		<constructor>
+			<idArg column="blog_id" javaType="int"/>
+			<arg column="author_id" javaType="int"/>
+			<arg column="blog_name" javaType="String"/>
+			<arg column="blog_brief" javaType="String"/>
+			<arg column="blog_content" javaType="String"/>
+			<arg column="blog_source" javaType="String"/>
+		</constructor>
+		<association property="author" javaType="com.zjipst.cjj.Author">
+			<id property="authorId" column="author_id" />
+			<result property="name" column="author_name" />
+			<result property="age" column="author_age" />
+			<result property="email" column="author_email" />
+			<result property="address" column="author_address" />
+			<result property="tel" column="author_tel" />
+		</association>
+		<collection property="comments" ofType="com.zjipst.cjj.Comment">
+			<id property="commentId" column="comment_id" />
+			<result property="blogId" column="blog_id" />
+			<result property="name" column="comment_name" />
+			<result property="content" column="comment_content" />
+			<result property="time" column="comment_time" />
+			<result property="status" column="comment_status" />
+		</collection>
+		<collection property="forwards" ofType="com.zjipst.cjj.Forward">
+			<id property="forwardId" column="forward_id" />
+			<result property="blogId" column="blog_id" />
+			<result property="name" column="forward_name" />
+			<result property="direction" column="forward_direction" />
+		</collection>
+	</resultMap>
+	<!-- Very Complex Statement -->
+	<select id="selectBlogDetails" resultMap="detailedBlogResultMap">
+		select
+		B.blog_id as blog_id,
+		B.name as blog_name,
+		B.brief as blog_brief,
+		B.content as blog_content,
+		B.source as blog_source,
+		A.author_id as author_id,
+		A.name as author_name,
+		A.age as author_age,
+		A.address as author_address,
+		A.email as author_email,
+		A.tel as author_tel,
+		C.comment_id as comment_id,
+		C.name as comment_name,
+		C.content as comment_content,
+		C.time as comment_time,
+		C.status as comment_status,
+		F.forward_id as forward_id,
+		F.direction as forward_direction,
+		F.name as forward_name
+		from blog B
+		left outer join Author A on B.author_id = A.author_id
+		left outer join Comment C on B.blog_id = C.blog_id
+		left outer join Forward F on B.blog_id = F.blog_id
+		where B.blog_id = #{blog_id}
+	</select>
+	
+	<!-- 默认情况下是没有开启缓存的,除了局部的 session 缓存,以下开启二级缓存 -->
+	<!-- eviction 回收策略  默认的是 LRU -->
+	<!-- flushInterval 刷新间隔  默认情况是不设置,也就是没有刷新间隔,缓存仅仅调用语句时刷新-->
+	<!-- size 缓存会存储列表集合或对象引用个数  默认值是 1024 -->
+	<!-- readOnly 返回的对象被认为是只读的 默认是 false-->
+	<cache  eviction="LRU" 			
+			flushInterval="60000"   
+			size="512" 				
+			readOnly="false" 		
+			type="com.zjipst.cjj.MyCustomCache"/>
+</mapper>
